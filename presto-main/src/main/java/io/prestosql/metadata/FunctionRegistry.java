@@ -415,12 +415,12 @@ public class FunctionRegistry
                 .window(NthValueFunction.class)
                 .window(LagFunction.class)
                 .window(LeadFunction.class)
-                .aggregate(ApproximateCountDistinctAggregation.class)
-                .aggregate(DefaultApproximateCountDistinctAggregation.class)
-                .aggregate(BooleanApproximateCountDistinctAggregation.class)
-                .aggregate(BooleanDefaultApproximateCountDistinctAggregation.class)
-                .aggregate(SumDataSizeForStats.class)
-                .aggregate(MaxDataSizeForStats.class)
+                .aggregates(ApproximateCountDistinctAggregation.class)
+                .aggregates(DefaultApproximateCountDistinctAggregation.class)
+                .aggregates(BooleanApproximateCountDistinctAggregation.class)
+                .aggregates(BooleanDefaultApproximateCountDistinctAggregation.class)
+                .aggregates(SumDataSizeForStats.class)
+                .aggregates(MaxDataSizeForStats.class)
                 .aggregates(CountAggregation.class)
                 .aggregates(VarianceAggregation.class)
                 .aggregates(CentralMomentsAggregation.class)
@@ -608,13 +608,13 @@ public class FunctionRegistry
                 .function(new GenericComparisonOperator(typeOperators))
                 .function(new GenericLessThanOperator(typeOperators))
                 .function(new GenericLessThanOrEqualOperator(typeOperators))
-                .aggregate(MergeSetDigestAggregation.class)
-                .aggregate(BuildSetDigestAggregation.class)
+                .aggregates(MergeSetDigestAggregation.class)
+                .aggregates(BuildSetDigestAggregation.class)
                 .scalars(SetDigestFunctions.class)
                 .scalars(SetDigestOperators.class)
                 .scalars(WilsonInterval.class)
-                .aggregate(BigintApproximateMostFrequent.class)
-                .aggregate(VarcharApproximateMostFrequent.class);
+                .aggregates(BigintApproximateMostFrequent.class)
+                .aggregates(VarcharApproximateMostFrequent.class);
 
         // timestamp operators and functions
         builder
