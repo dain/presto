@@ -34,6 +34,8 @@ import io.prestosql.operator.aggregation.BigintApproximateMostFrequent;
 import io.prestosql.operator.aggregation.BitwiseAndAggregation;
 import io.prestosql.operator.aggregation.BitwiseOrAggregation;
 import io.prestosql.operator.aggregation.BooleanAndAggregation;
+import io.prestosql.operator.aggregation.BooleanApproximateCountDistinctAggregation;
+import io.prestosql.operator.aggregation.BooleanDefaultApproximateCountDistinctAggregation;
 import io.prestosql.operator.aggregation.BooleanOrAggregation;
 import io.prestosql.operator.aggregation.CentralMomentsAggregation;
 import io.prestosql.operator.aggregation.ChecksumAggregationFunction;
@@ -412,6 +414,8 @@ public class FunctionRegistry
                 .window(LeadFunction.class)
                 .aggregate(ApproximateCountDistinctAggregation.class)
                 .aggregate(DefaultApproximateCountDistinctAggregation.class)
+                .aggregate(BooleanApproximateCountDistinctAggregation.class)
+                .aggregate(BooleanDefaultApproximateCountDistinctAggregation.class)
                 .aggregate(SumDataSizeForStats.class)
                 .aggregate(MaxDataSizeForStats.class)
                 .aggregates(CountAggregation.class)
