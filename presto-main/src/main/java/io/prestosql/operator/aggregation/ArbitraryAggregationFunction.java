@@ -15,6 +15,7 @@ package io.prestosql.operator.aggregation;
 
 import com.google.common.collect.ImmutableList;
 import io.airlift.bytecode.DynamicClassLoader;
+import io.prestosql.metadata.AggregationFunctionMetadata;
 import io.prestosql.metadata.FunctionArgumentDefinition;
 import io.prestosql.metadata.FunctionBinding;
 import io.prestosql.metadata.FunctionMetadata;
@@ -89,25 +90,9 @@ public class ArbitraryAggregationFunction
                         true,
                         "Return an arbitrary non-null input value",
                         AGGREGATE),
-                true,
-                false);
-    }
-
-    @Override
-    public List<TypeSignature> getIntermediateTypes(FunctionBinding functionBinding)
-    {
-        Type type = functionBinding.getTypeVariable("T");
-        if (type.getJavaType() == long.class) {
-            return ImmutableList.of(StateCompiler.getSerializedType(NullableLongState.class).getTypeSignature());
-        }
-        if (type.getJavaType() == double.class) {
-            return ImmutableList.of(StateCompiler.getSerializedType(NullableDoubleState.class).getTypeSignature());
-        }
-        if (type.getJavaType() == boolean.class) {
-            return ImmutableList.of(StateCompiler.getSerializedType(NullableBooleanState.class).getTypeSignature());
-        }
-        // native container type is Slice or Block
-        return ImmutableList.of(new BlockPositionStateSerializer(type).getSerializedType().getTypeSignature());
+                new AggregationFunctionMetadata(
+                        false,
+                        new TypeSignature("T")));
     }
 
     @Override

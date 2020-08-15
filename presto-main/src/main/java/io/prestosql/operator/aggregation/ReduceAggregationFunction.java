@@ -15,6 +15,7 @@ package io.prestosql.operator.aggregation;
 
 import com.google.common.collect.ImmutableList;
 import io.airlift.bytecode.DynamicClassLoader;
+import io.prestosql.metadata.AggregationFunctionMetadata;
 import io.prestosql.metadata.FunctionArgumentDefinition;
 import io.prestosql.metadata.FunctionBinding;
 import io.prestosql.metadata.FunctionMetadata;
@@ -92,14 +93,9 @@ public class ReduceAggregationFunction
                         true,
                         "Reduce input elements into a single value",
                         AGGREGATE),
-                true,
-                false);
-    }
-
-    @Override
-    public List<TypeSignature> getIntermediateTypes(FunctionBinding functionBinding)
-    {
-        return ImmutableList.of(functionBinding.getTypeVariable("S").getTypeSignature());
+                new AggregationFunctionMetadata(
+                        false,
+                        new TypeSignature("S")));
     }
 
     @Override

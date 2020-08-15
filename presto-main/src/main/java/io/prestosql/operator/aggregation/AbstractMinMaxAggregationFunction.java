@@ -16,6 +16,7 @@ package io.prestosql.operator.aggregation;
 import com.google.common.collect.ImmutableList;
 import io.airlift.bytecode.DynamicClassLoader;
 import io.prestosql.annotation.UsedByGeneratedCode;
+import io.prestosql.metadata.AggregationFunctionMetadata;
 import io.prestosql.metadata.FunctionArgumentDefinition;
 import io.prestosql.metadata.FunctionBinding;
 import io.prestosql.metadata.FunctionDependencies;
@@ -101,8 +102,9 @@ public abstract class AbstractMinMaxAggregationFunction
                         true,
                         description,
                         AGGREGATE),
-                true,
-                false);
+                new AggregationFunctionMetadata(
+                        false,
+                        new TypeSignature("E")));
         this.min = min;
     }
 
@@ -112,23 +114,6 @@ public abstract class AbstractMinMaxAggregationFunction
         return FunctionDependencyDeclaration.builder()
                 .addOperatorSignature(COMPARISON, ImmutableList.of(new TypeSignature("E"), new TypeSignature("E")))
                 .build();
-    }
-
-    @Override
-    public List<TypeSignature> getIntermediateTypes(FunctionBinding functionBinding)
-    {
-        Type type = functionBinding.getTypeVariable("E");
-        if (type.getJavaType() == long.class) {
-            return ImmutableList.of(StateCompiler.getSerializedType(NullableLongState.class).getTypeSignature());
-        }
-        if (type.getJavaType() == double.class) {
-            return ImmutableList.of(StateCompiler.getSerializedType(NullableDoubleState.class).getTypeSignature());
-        }
-        if (type.getJavaType() == boolean.class) {
-            return ImmutableList.of(StateCompiler.getSerializedType(NullableBooleanState.class).getTypeSignature());
-        }
-        // native container type is Slice or Block
-        return ImmutableList.of(new BlockPositionStateSerializer(type).getSerializedType().getTypeSignature());
     }
 
     @Override
