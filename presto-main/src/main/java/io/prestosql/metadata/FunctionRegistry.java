@@ -53,6 +53,9 @@ import io.prestosql.operator.aggregation.IntervalDayToSecondAverageAggregation;
 import io.prestosql.operator.aggregation.IntervalDayToSecondSumAggregation;
 import io.prestosql.operator.aggregation.IntervalYearToMonthAverageAggregation;
 import io.prestosql.operator.aggregation.IntervalYearToMonthSumAggregation;
+import io.prestosql.operator.aggregation.LegacyApproximateDoublePercentileAggregations;
+import io.prestosql.operator.aggregation.LegacyApproximateLongPercentileAggregations;
+import io.prestosql.operator.aggregation.LegacyApproximateRealPercentileAggregations;
 import io.prestosql.operator.aggregation.LongSumAggregation;
 import io.prestosql.operator.aggregation.MapAggregationFunction;
 import io.prestosql.operator.aggregation.MapUnionAggregation;
@@ -422,10 +425,13 @@ public class FunctionRegistry
                 .aggregates(VarianceAggregation.class)
                 .aggregates(CentralMomentsAggregation.class)
                 .aggregates(ApproximateLongPercentileAggregations.class)
+                .aggregates(LegacyApproximateLongPercentileAggregations.class)
                 .aggregates(ApproximateLongPercentileArrayAggregations.class)
                 .aggregates(ApproximateDoublePercentileAggregations.class)
+                .aggregates(LegacyApproximateDoublePercentileAggregations.class)
                 .aggregates(ApproximateDoublePercentileArrayAggregations.class)
                 .aggregates(ApproximateRealPercentileAggregations.class)
+                .aggregates(LegacyApproximateRealPercentileAggregations.class)
                 .aggregates(ApproximateRealPercentileArrayAggregations.class)
                 .aggregates(CountIfAggregation.class)
                 .aggregates(BooleanAndAggregation.class)
