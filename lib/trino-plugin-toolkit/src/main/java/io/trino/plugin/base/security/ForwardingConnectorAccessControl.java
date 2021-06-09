@@ -47,6 +47,12 @@ public abstract class ForwardingConnectorAccessControl
     protected abstract ConnectorAccessControl delegate();
 
     @Override
+    public RoleSupport getRoleSupport()
+    {
+        return delegate().getRoleSupport();
+    }
+
+    @Override
     public void checkCanCreateSchema(ConnectorSecurityContext context, String schemaName)
     {
         delegate().checkCanCreateSchema(context, schemaName);

@@ -32,6 +32,7 @@ import io.trino.spi.TrinoException;
 import io.trino.spi.connector.CatalogSchemaName;
 import io.trino.spi.connector.CatalogSchemaTableName;
 import io.trino.spi.connector.ConnectorAccessControl;
+import io.trino.spi.connector.ConnectorAccessControl.RoleSupport;
 import io.trino.spi.connector.ConnectorSecurityContext;
 import io.trino.spi.connector.ConnectorTransactionHandle;
 import io.trino.spi.connector.SchemaTableName;
@@ -856,7 +857,7 @@ public class AccessControlManager
         requireNonNull(grantor, "grantor is null");
         requireNonNull(catalogName, "catalogName is null");
 
-        if (catalogName.isPresent()) {
+        if (isCatalogRoles(securityContext, catalogName)) {
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, (control, context) -> control.checkCanCreateRole(context, role, grantor));
         }
@@ -869,7 +870,7 @@ public class AccessControlManager
         requireNonNull(role, "role is null");
         requireNonNull(catalogName, "catalogName is null");
 
-        if (catalogName.isPresent()) {
+        if (isCatalogRoles(securityContext, catalogName)) {
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, (control, context) -> control.checkCanDropRole(context, role));
         }
@@ -884,7 +885,7 @@ public class AccessControlManager
         requireNonNull(grantor, "grantor is null");
         requireNonNull(catalogName, "catalogName is null");
 
-        if (catalogName.isPresent()) {
+        if (isCatalogRoles(securityContext, catalogName)) {
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, (control, context) -> control.checkCanGrantRoles(context, roles, grantees, adminOption, grantor));
         }
@@ -899,7 +900,7 @@ public class AccessControlManager
         requireNonNull(grantor, "grantor is null");
         requireNonNull(catalogName, "catalogName is null");
 
-        if (catalogName.isPresent()) {
+        if (isCatalogRoles(securityContext, catalogName)) {
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, (control, context) -> control.checkCanRevokeRoles(context, roles, grantees, adminOption, grantor));
         }
@@ -922,7 +923,7 @@ public class AccessControlManager
         requireNonNull(securityContext, "securityContext is null");
         requireNonNull(catalogName, "catalogName is null");
 
-        if (catalogName.isPresent()) {
+        if (isCatalogRoles(securityContext, catalogName)) {
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, ConnectorAccessControl::checkCanShowRoleAuthorizationDescriptors);
         }
@@ -934,7 +935,7 @@ public class AccessControlManager
         requireNonNull(securityContext, "securityContext is null");
         requireNonNull(catalogName, "catalogName is null");
 
-        if (catalogName.isPresent()) {
+        if (isCatalogRoles(securityContext, catalogName)) {
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, ConnectorAccessControl::checkCanShowRoles);
         }
@@ -946,7 +947,7 @@ public class AccessControlManager
         requireNonNull(securityContext, "securityContext is null");
         requireNonNull(catalogName, "catalogName is null");
 
-        if (catalogName.isPresent()) {
+        if (isCatalogRoles(securityContext, catalogName)) {
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, ConnectorAccessControl::checkCanShowCurrentRoles);
         }
@@ -958,7 +959,7 @@ public class AccessControlManager
         requireNonNull(securityContext, "securityContext is null");
         requireNonNull(catalogName, "catalogName is null");
 
-        if (catalogName.isPresent()) {
+        if (isCatalogRoles(securityContext, catalogName)) {
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, ConnectorAccessControl::checkCanShowRoleGrants);
         }
@@ -1098,6 +1099,18 @@ public class AccessControlManager
             authorizationFail.update(1);
             throw e;
         }
+    }
+
+    private boolean isCatalogRoles(SecurityContext securityContext, Optional<String> catalogName)
+    {
+        if (catalogName.isEmpty()) {
+            return false;
+        }
+        CatalogAccessControlEntry entry = getConnectorAccessControl(securityContext.getTransactionId(), catalogName.get());
+        if (entry == null) {
+            return false;
+        }
+        return entry.getAccessControl().getRoleSupport() == RoleSupport.CONNECTOR;
     }
 
     private List<SystemAccessControl> getSystemAccessControls()

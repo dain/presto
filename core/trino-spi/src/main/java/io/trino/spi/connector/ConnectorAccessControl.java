@@ -70,6 +70,19 @@ import static java.util.Collections.emptySet;
 
 public interface ConnectorAccessControl
 {
+    enum RoleSupport
+    {
+        GLOBAL, CONNECTOR
+    }
+
+    /**
+     * Does the access control support global or connector scoped roles?
+     */
+    default RoleSupport getRoleSupport()
+    {
+        return RoleSupport.CONNECTOR;
+    }
+
     /**
      * Check if identity is allowed to create the specified schema.
      *

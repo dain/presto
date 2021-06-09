@@ -44,6 +44,14 @@ public class ClassLoaderSafeConnectorAccessControl
     }
 
     @Override
+    public RoleSupport getRoleSupport()
+    {
+        try (ThreadContextClassLoader ignored = new ThreadContextClassLoader(classLoader)) {
+            return delegate.getRoleSupport();
+        }
+    }
+
+    @Override
     public void checkCanCreateSchema(ConnectorSecurityContext context, String schemaName)
     {
         try (ThreadContextClassLoader ignored = new ThreadContextClassLoader(classLoader)) {

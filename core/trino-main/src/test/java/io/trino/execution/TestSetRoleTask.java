@@ -25,6 +25,7 @@ import io.trino.metadata.Metadata;
 import io.trino.security.AccessControl;
 import io.trino.security.AllowAllAccessControl;
 import io.trino.spi.connector.Connector;
+import io.trino.spi.connector.ConnectorAccessControl.RoleSupport;
 import io.trino.spi.resourcegroups.ResourceGroupId;
 import io.trino.spi.security.Identity;
 import io.trino.spi.security.RoleGrant;
@@ -88,6 +89,7 @@ public class TestSetRoleTask
                 CATALOG_NAME,
                 catalogName,
                 testConnector,
+                RoleSupport.CONNECTOR,
                 createInformationSchemaCatalogName(catalogName),
                 testConnector,
                 createSystemTablesCatalogName(catalogName),

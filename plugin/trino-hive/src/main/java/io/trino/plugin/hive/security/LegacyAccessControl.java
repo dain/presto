@@ -69,6 +69,12 @@ public class LegacyAccessControl
     }
 
     @Override
+    public RoleSupport getRoleSupport()
+    {
+        return RoleSupport.CONNECTOR;
+    }
+
+    @Override
     public void checkCanCreateSchema(ConnectorSecurityContext context, String schemaName)
     {
     }

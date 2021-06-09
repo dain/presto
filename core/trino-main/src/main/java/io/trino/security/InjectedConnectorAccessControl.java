@@ -48,6 +48,12 @@ public class InjectedConnectorAccessControl
     }
 
     @Override
+    public RoleSupport getRoleSupport()
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void checkCanCreateSchema(ConnectorSecurityContext context, String schemaName)
     {
         checkArgument(context == null, "context must be null");
