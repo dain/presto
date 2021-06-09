@@ -30,7 +30,6 @@ import java.util.Optional;
 import static com.google.common.util.concurrent.Futures.immediateVoidFuture;
 import static io.trino.metadata.MetadataUtil.checkRoleExists;
 import static io.trino.metadata.MetadataUtil.createPrincipal;
-import static io.trino.metadata.MetadataUtil.getSessionCatalog;
 import static io.trino.spi.StandardErrorCode.ROLE_ALREADY_EXISTS;
 import static io.trino.sql.analyzer.SemanticExceptions.semanticException;
 import static java.util.Locale.ENGLISH;
@@ -55,9 +54,9 @@ public class CreateRoleTask
             WarningCollector warningCollector)
     {
         Session session = stateMachine.getSession();
-        String catalog = statement.getCatalog()
-                .map(Identifier::getValue)
-                .orElseGet(() -> getSessionCatalog(metadata, session, statement));
+        Optional<String> catalog = statement.getCatalog()
+                .map(Identifier::getValue);
+        catalog.ifPresent(catalogName -> metadata.getRequiredCatalogHandle(session, catalogName));
         String role = statement.getName().getValue().toLowerCase(ENGLISH);
         Optional<TrinoPrincipal> grantor = statement.getGrantor().map(specification -> createPrincipal(session, specification));
         accessControl.checkCanCreateRole(session.toSecurityContext(), role, grantor, catalog);

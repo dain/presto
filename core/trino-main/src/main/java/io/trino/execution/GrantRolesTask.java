@@ -35,7 +35,6 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.google.common.util.concurrent.Futures.immediateVoidFuture;
 import static io.trino.metadata.MetadataUtil.checkRoleExists;
 import static io.trino.metadata.MetadataUtil.createPrincipal;
-import static io.trino.metadata.MetadataUtil.getSessionCatalog;
 import static io.trino.spi.security.PrincipalType.ROLE;
 
 public class GrantRolesTask
@@ -65,9 +64,9 @@ public class GrantRolesTask
                 .collect(toImmutableSet());
         boolean adminOption = statement.isAdminOption();
         Optional<TrinoPrincipal> grantor = statement.getGrantor().map(specification -> createPrincipal(session, specification));
-        String catalog = statement.getCatalog()
-                .map(Identifier::getValue)
-                .orElseGet(() -> getSessionCatalog(metadata, session, statement));
+        Optional<String> catalog = statement.getCatalog()
+                .map(Identifier::getValue);
+        catalog.ifPresent(catalogName -> metadata.getRequiredCatalogHandle(session, catalogName));
 
         Set<String> specifiedRoles = new LinkedHashSet<>();
         specifiedRoles.addAll(roles);

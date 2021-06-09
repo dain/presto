@@ -24,10 +24,10 @@ import io.trino.sql.tree.Identifier;
 import io.trino.transaction.TransactionManager;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.google.common.util.concurrent.Futures.immediateVoidFuture;
 import static io.trino.metadata.MetadataUtil.checkRoleExists;
-import static io.trino.metadata.MetadataUtil.getSessionCatalog;
 import static java.util.Locale.ENGLISH;
 
 public class DropRoleTask
@@ -50,9 +50,9 @@ public class DropRoleTask
             WarningCollector warningCollector)
     {
         Session session = stateMachine.getSession();
-        String catalog = statement.getCatalog()
-                .map(Identifier::getValue)
-                .orElseGet(() -> getSessionCatalog(metadata, session, statement));
+        Optional<String> catalog = statement.getCatalog()
+                .map(Identifier::getValue);
+        catalog.ifPresent(catalogName -> metadata.getRequiredCatalogHandle(session, catalogName));
         String role = statement.getName().getValue().toLowerCase(ENGLISH);
         accessControl.checkCanDropRole(session.toSecurityContext(), role, catalog);
         checkRoleExists(session, statement, metadata, role, catalog);
