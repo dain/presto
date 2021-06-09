@@ -21,6 +21,7 @@ import io.trino.security.AccessControl;
 import io.trino.security.SecurityContext;
 import io.trino.spi.security.SelectedRole;
 import io.trino.sql.tree.Expression;
+import io.trino.sql.tree.Identifier;
 import io.trino.sql.tree.SetRole;
 import io.trino.transaction.TransactionManager;
 
@@ -50,7 +51,9 @@ public class SetRoleTask
             WarningCollector warningCollector)
     {
         Session session = stateMachine.getSession();
-        String catalog = getSessionCatalog(metadata, session, statement);
+        String catalog = statement.getCatalog()
+                .map(Identifier::getValue)
+                .orElseGet(() -> getSessionCatalog(metadata, session, statement));
         if (statement.getType() == SetRole.Type.ROLE) {
             accessControl.checkCanSetRole(
                     SecurityContext.of(session),

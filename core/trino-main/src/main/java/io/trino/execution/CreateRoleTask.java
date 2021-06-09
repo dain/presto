@@ -21,6 +21,7 @@ import io.trino.security.AccessControl;
 import io.trino.spi.security.TrinoPrincipal;
 import io.trino.sql.tree.CreateRole;
 import io.trino.sql.tree.Expression;
+import io.trino.sql.tree.Identifier;
 import io.trino.transaction.TransactionManager;
 
 import java.util.List;
@@ -54,7 +55,9 @@ public class CreateRoleTask
             WarningCollector warningCollector)
     {
         Session session = stateMachine.getSession();
-        String catalog = getSessionCatalog(metadata, session, statement);
+        String catalog = statement.getCatalog()
+                .map(Identifier::getValue)
+                .orElseGet(() -> getSessionCatalog(metadata, session, statement));
         String role = statement.getName().getValue().toLowerCase(ENGLISH);
         Optional<TrinoPrincipal> grantor = statement.getGrantor().map(specification -> createPrincipal(session, specification));
         accessControl.checkCanCreateRole(session.toSecurityContext(), role, grantor, catalog);

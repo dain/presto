@@ -21,6 +21,7 @@ import io.trino.metadata.MetadataUtil;
 import io.trino.security.AccessControl;
 import io.trino.spi.security.TrinoPrincipal;
 import io.trino.sql.tree.Expression;
+import io.trino.sql.tree.Identifier;
 import io.trino.sql.tree.RevokeRoles;
 import io.trino.transaction.TransactionManager;
 
@@ -64,7 +65,9 @@ public class RevokeRolesTask
                 .collect(toImmutableSet());
         boolean adminOption = statement.isAdminOption();
         Optional<TrinoPrincipal> grantor = statement.getGrantor().map(specification -> createPrincipal(session, specification));
-        String catalog = getSessionCatalog(metadata, session, statement);
+        String catalog = statement.getCatalog()
+                .map(Identifier::getValue)
+                .orElseGet(() -> getSessionCatalog(metadata, session, statement));
 
         Set<String> specifiedRoles = new LinkedHashSet<>();
         specifiedRoles.addAll(roles);
