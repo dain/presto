@@ -64,8 +64,7 @@ public class SetSchemaAuthorizationTask
             throw semanticException(SCHEMA_NOT_FOUND, statement, "Schema '%s' does not exist", source);
         }
         TrinoPrincipal principal = createPrincipal(statement.getPrincipal());
-        if (principal.getType() == PrincipalType.ROLE
-                && !metadata.listRoles(session, catalog).contains(principal.getName())) {
+        if (principal.getType() == PrincipalType.ROLE && !metadata.roleExists(session, principal.getName(), catalog)) {
             throw semanticException(ROLE_NOT_FOUND, statement, "Role '%s' does not exist", principal.getName());
         }
 
