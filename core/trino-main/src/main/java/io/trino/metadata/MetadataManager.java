@@ -214,6 +214,7 @@ public final class MetadataManager
     private final MaterializedViewPropertyManager materializedViewPropertyManager;
     private final ColumnPropertyManager columnPropertyManager;
     private final AnalyzePropertyManager analyzePropertyManager;
+    private final GlobalSecurityMetadata globalSecurityMetadata;
     private final TransactionManager transactionManager;
     private final TypeRegistry typeRegistry;
 
@@ -234,6 +235,7 @@ public final class MetadataManager
             MaterializedViewPropertyManager materializedViewPropertyManager,
             ColumnPropertyManager columnPropertyManager,
             AnalyzePropertyManager analyzePropertyManager,
+            GlobalSecurityMetadata globalSecurityMetadata,
             TransactionManager transactionManager,
             TypeOperators typeOperators,
             BlockTypeOperators blockTypeOperators,
@@ -251,6 +253,7 @@ public final class MetadataManager
         this.materializedViewPropertyManager = requireNonNull(materializedViewPropertyManager, "materializedViewPropertyManager is null");
         this.columnPropertyManager = requireNonNull(columnPropertyManager, "columnPropertyManager is null");
         this.analyzePropertyManager = requireNonNull(analyzePropertyManager, "analyzePropertyManager is null");
+        this.globalSecurityMetadata = requireNonNull(globalSecurityMetadata, "globalRoleManager is null");
         this.transactionManager = requireNonNull(transactionManager, "transactionManager is null");
         this.typeOperators = requireNonNull(typeOperators, "typeOperators is null");
 
@@ -324,6 +327,7 @@ public final class MetadataManager
                 new MaterializedViewPropertyManager(),
                 new ColumnPropertyManager(),
                 new AnalyzePropertyManager(),
+                new DisabledGlobalSecurityMetadata(),
                 transactionManager,
                 typeOperators,
                 new BlockTypeOperators(typeOperators),
@@ -1734,7 +1738,7 @@ public final class MetadataManager
             }
         }
 
-        throw new TrinoException(NOT_SUPPORTED, "Global roles are not supported yet");
+        return globalSecurityMetadata.roleExists(session, role);
     }
 
     @Override
@@ -1750,7 +1754,7 @@ public final class MetadataManager
             }
         }
 
-        throw new TrinoException(NOT_SUPPORTED, "Global roles are not supported yet");
+        globalSecurityMetadata.createRole(session, role, grantor);
     }
 
     @Override
@@ -1766,7 +1770,7 @@ public final class MetadataManager
             }
         }
 
-        throw new TrinoException(NOT_SUPPORTED, "Global roles are not supported yet");
+        globalSecurityMetadata.dropRole(session, role);
     }
 
     @Override
@@ -1787,7 +1791,7 @@ public final class MetadataManager
             }
         }
 
-        return ImmutableSet.of();
+        return globalSecurityMetadata.listRoles(session);
     }
 
     @Override
@@ -1806,7 +1810,7 @@ public final class MetadataManager
             }
         }
 
-        return ImmutableSet.of();
+        return globalSecurityMetadata.listAllRoleGrants(session, roles, grantees, limit);
     }
 
     @Override
@@ -1825,7 +1829,7 @@ public final class MetadataManager
             }
         }
 
-        return ImmutableSet.of();
+        return globalSecurityMetadata.listRoleGrants(session, principal);
     }
 
     @Override
@@ -1841,7 +1845,7 @@ public final class MetadataManager
             }
         }
 
-        throw new TrinoException(NOT_SUPPORTED, "Global roles are not supported yet");
+        globalSecurityMetadata.grantRoles(session, roles, grantees, adminOption, grantor);
     }
 
     @Override
@@ -1857,7 +1861,7 @@ public final class MetadataManager
             }
         }
 
-        throw new TrinoException(NOT_SUPPORTED, "Global roles are not supported yet");
+        globalSecurityMetadata.revokeRoles(session, roles, grantees, adminOption, grantor);
     }
 
     @Override
@@ -1876,15 +1880,18 @@ public final class MetadataManager
             }
         }
 
-        return ImmutableSet.of();
+        return globalSecurityMetadata.listApplicableRoles(session, principal);
     }
 
     @Override
     public Set<String> listEnabledRoles(Session session, String catalog)
     {
         Optional<CatalogMetadata> catalogMetadata = getOptionalCatalogMetadata(session, catalog);
-        if (catalogMetadata.isEmpty() || catalogMetadata.get().getRoleSupport() == RoleSupport.GLOBAL) {
+        if (catalogMetadata.isEmpty()) {
             return ImmutableSet.of();
+        }
+        if (catalogMetadata.get().getRoleSupport() == RoleSupport.GLOBAL) {
+            return globalSecurityMetadata.listEnabledRoles(session.getIdentity());
         }
 
         CatalogName catalogName = catalogMetadata.get().getCatalogName();
