@@ -118,7 +118,7 @@ public class FileBasedAccessControl
     @Override
     public RoleSupport getRoleSupport()
     {
-        return RoleSupport.CONNECTOR;
+        return RoleSupport.GLOBAL;
     }
 
     @Override
@@ -232,7 +232,7 @@ public class FileBasedAccessControl
 
         ConnectorIdentity identity = context.getIdentity();
         TableAccessControlRule rule = tableRules.stream()
-                .filter(tableRule -> tableRule.matches(identity.getUser(), identity.getGroups(), tableName))
+                .filter(tableRule -> tableRule.matches(identity.getUser(), identity.getEnabledSystemRoles(), identity.getGroups(), tableName))
                 .findFirst()
                 .orElse(null);
         if (rule == null || rule.getPrivileges().isEmpty()) {
@@ -316,7 +316,7 @@ public class FileBasedAccessControl
 
         ConnectorIdentity identity = context.getIdentity();
         boolean allowed = tableRules.stream()
-                .filter(rule -> rule.matches(identity.getUser(), identity.getGroups(), tableName))
+                .filter(rule -> rule.matches(identity.getUser(), identity.getEnabledSystemRoles(), identity.getGroups(), tableName))
                 .map(rule -> rule.canSelectColumns(columnNames))
                 .findFirst()
                 .orElse(false);
@@ -392,7 +392,7 @@ public class FileBasedAccessControl
 
         ConnectorIdentity identity = context.getIdentity();
         TableAccessControlRule rule = tableRules.stream()
-                .filter(tableRule -> tableRule.matches(identity.getUser(), identity.getGroups(), tableName))
+                .filter(tableRule -> tableRule.matches(identity.getUser(), identity.getEnabledSystemRoles(), identity.getGroups(), tableName))
                 .findFirst()
                 .orElse(null);
         if (rule == null || !rule.canSelectColumns(columnNames)) {
@@ -542,7 +542,7 @@ public class FileBasedAccessControl
 
         ConnectorIdentity identity = context.getIdentity();
         return tableRules.stream()
-                .filter(rule -> rule.matches(identity.getUser(), identity.getGroups(), tableName))
+                .filter(rule -> rule.matches(identity.getUser(), identity.getEnabledSystemRoles(), identity.getGroups(), tableName))
                 .map(rule -> rule.getFilter(identity.getUser(), catalogName, tableName.getSchemaName()))
                 .findFirst()
                 .flatMap(Function.identity());
@@ -557,7 +557,7 @@ public class FileBasedAccessControl
 
         ConnectorIdentity identity = context.getIdentity();
         return tableRules.stream()
-                .filter(rule -> rule.matches(identity.getUser(), identity.getGroups(), tableName))
+                .filter(rule -> rule.matches(identity.getUser(), identity.getEnabledSystemRoles(), identity.getGroups(), tableName))
                 .map(rule -> rule.getColumnMask(identity.getUser(), catalogName, tableName.getSchemaName(), columnName))
                 .findFirst()
                 .flatMap(Function.identity());
@@ -567,7 +567,7 @@ public class FileBasedAccessControl
     {
         ConnectorIdentity identity = context.getIdentity();
         for (SessionPropertyAccessControlRule rule : sessionPropertyRules) {
-            Optional<Boolean> allowed = rule.match(identity.getUser(), identity.getGroups(), property);
+            Optional<Boolean> allowed = rule.match(identity.getUser(), identity.getEnabledSystemRoles(), identity.getGroups(), property);
             if (allowed.isPresent()) {
                 return allowed.get();
             }
@@ -593,7 +593,7 @@ public class FileBasedAccessControl
 
         ConnectorIdentity identity = context.getIdentity();
         for (TableAccessControlRule rule : tableRules) {
-            if (rule.matches(identity.getUser(), identity.getGroups(), tableName)) {
+            if (rule.matches(identity.getUser(), identity.getEnabledSystemRoles(), identity.getGroups(), tableName)) {
                 return checkPrivileges.test(rule.getPrivileges());
             }
         }
@@ -603,14 +603,14 @@ public class FileBasedAccessControl
     private boolean checkAnySchemaAccess(ConnectorSecurityContext context, String schemaName)
     {
         ConnectorIdentity identity = context.getIdentity();
-        return anySchemaPermissionsRules.stream().anyMatch(rule -> rule.match(identity.getUser(), identity.getGroups(), schemaName));
+        return anySchemaPermissionsRules.stream().anyMatch(rule -> rule.match(identity.getUser(), identity.getEnabledSystemRoles(), identity.getGroups(), schemaName));
     }
 
     private boolean isSchemaOwner(ConnectorSecurityContext context, String schemaName)
     {
         ConnectorIdentity identity = context.getIdentity();
         for (SchemaAccessControlRule rule : schemaRules) {
-            Optional<Boolean> owner = rule.match(identity.getUser(), identity.getGroups(), schemaName);
+            Optional<Boolean> owner = rule.match(identity.getUser(), identity.getEnabledSystemRoles(), identity.getGroups(), schemaName);
             if (owner.isPresent()) {
                 return owner.get();
             }
