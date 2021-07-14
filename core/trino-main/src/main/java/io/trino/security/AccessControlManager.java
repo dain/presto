@@ -861,6 +861,9 @@ public class AccessControlManager
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, (control, context) -> control.checkCanCreateRole(context, role, grantor));
         }
+        else {
+            systemAuthorizationCheck(control -> control.checkCanCreateRole(securityContext.toSystemSecurityContext(), role, grantor));
+        }
     }
 
     @Override
@@ -873,6 +876,9 @@ public class AccessControlManager
         if (isCatalogRoles(securityContext, catalogName)) {
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, (control, context) -> control.checkCanDropRole(context, role));
+        }
+        else {
+            systemAuthorizationCheck(control -> control.checkCanDropRole(securityContext.toSystemSecurityContext(), role));
         }
     }
 
@@ -889,6 +895,9 @@ public class AccessControlManager
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, (control, context) -> control.checkCanGrantRoles(context, roles, grantees, adminOption, grantor));
         }
+        else {
+            systemAuthorizationCheck(control -> control.checkCanGrantRoles(securityContext.toSystemSecurityContext(), roles, grantees, adminOption, grantor));
+        }
     }
 
     @Override
@@ -903,6 +912,9 @@ public class AccessControlManager
         if (isCatalogRoles(securityContext, catalogName)) {
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, (control, context) -> control.checkCanRevokeRoles(context, roles, grantees, adminOption, grantor));
+        }
+        else {
+            systemAuthorizationCheck(control -> control.checkCanRevokeRoles(securityContext.toSystemSecurityContext(), roles, grantees, adminOption, grantor));
         }
     }
 
@@ -927,6 +939,9 @@ public class AccessControlManager
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, ConnectorAccessControl::checkCanShowRoleAuthorizationDescriptors);
         }
+        else {
+            systemAuthorizationCheck(control -> control.checkCanShowRoleAuthorizationDescriptors(securityContext.toSystemSecurityContext()));
+        }
     }
 
     @Override
@@ -938,6 +953,9 @@ public class AccessControlManager
         if (isCatalogRoles(securityContext, catalogName)) {
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, ConnectorAccessControl::checkCanShowRoles);
+        }
+        else {
+            systemAuthorizationCheck(control -> control.checkCanShowRoles(securityContext.toSystemSecurityContext()));
         }
     }
 
@@ -951,6 +969,9 @@ public class AccessControlManager
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, ConnectorAccessControl::checkCanShowCurrentRoles);
         }
+        else {
+            systemAuthorizationCheck(control -> control.checkCanShowCurrentRoles(securityContext.toSystemSecurityContext()));
+        }
     }
 
     @Override
@@ -962,6 +983,9 @@ public class AccessControlManager
         if (isCatalogRoles(securityContext, catalogName)) {
             checkCanAccessCatalog(securityContext, catalogName.get());
             catalogAuthorizationCheck(catalogName.get(), securityContext, ConnectorAccessControl::checkCanShowRoleGrants);
+        }
+        else {
+            systemAuthorizationCheck(control -> control.checkCanShowRoleGrants(securityContext.toSystemSecurityContext()));
         }
     }
 
