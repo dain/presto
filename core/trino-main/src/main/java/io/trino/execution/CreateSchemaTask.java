@@ -36,7 +36,6 @@ import static com.google.common.util.concurrent.Futures.immediateVoidFuture;
 import static io.trino.metadata.MetadataUtil.createCatalogSchemaName;
 import static io.trino.metadata.MetadataUtil.createPrincipal;
 import static io.trino.spi.StandardErrorCode.ALREADY_EXISTS;
-import static io.trino.spi.StandardErrorCode.NOT_FOUND;
 import static io.trino.spi.StandardErrorCode.ROLE_NOT_FOUND;
 import static io.trino.spi.StandardErrorCode.SCHEMA_ALREADY_EXISTS;
 import static io.trino.sql.NodeUtils.mapFromProperties;
@@ -87,8 +86,7 @@ public class CreateSchemaTask
             return immediateVoidFuture();
         }
 
-        CatalogName catalogName = metadata.getCatalogHandle(session, schema.getCatalogName())
-                .orElseThrow(() -> new TrinoException(NOT_FOUND, "Catalog does not exist: " + schema.getCatalogName()));
+        CatalogName catalogName = metadata.getRequiredCatalogHandle(session, schema.getCatalogName());
 
         Map<String, Object> properties = metadata.getSchemaPropertyManager().getProperties(
                 catalogName,

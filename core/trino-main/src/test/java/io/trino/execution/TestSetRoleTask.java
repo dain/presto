@@ -38,7 +38,7 @@ import java.util.concurrent.ExecutorService;
 
 import static io.airlift.concurrent.Threads.daemonThreadsNamed;
 import static io.trino.metadata.MetadataManager.createTestMetadataManager;
-import static io.trino.spi.StandardErrorCode.NOT_FOUND;
+import static io.trino.spi.StandardErrorCode.CATALOG_NOT_FOUND;
 import static io.trino.testing.TestingSession.createBogusTestingCatalog;
 import static io.trino.testing.TestingSession.testSessionBuilder;
 import static io.trino.testing.assertions.TrinoExceptionAssert.assertTrinoExceptionThrownBy;
@@ -93,7 +93,7 @@ public class TestSetRoleTask
     public void testSetRoleInvalidCatalog()
     {
         assertTrinoExceptionThrownBy(() -> executeSetRole("invalid", "SET ROLE foo"))
-                .hasErrorCode(NOT_FOUND)
+                .hasErrorCode(CATALOG_NOT_FOUND)
                 .hasMessage("Catalog does not exist: invalid");
     }
 

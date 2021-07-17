@@ -385,9 +385,7 @@ final class ShowQueriesRewrite
         protected Node visitShowColumns(ShowColumns showColumns, Void context)
         {
             QualifiedObjectName tableName = createQualifiedObjectName(session, showColumns, showColumns.getTable());
-            if (metadata.getCatalogHandle(session, tableName.getCatalogName()).isEmpty()) {
-                throw semanticException(CATALOG_NOT_FOUND, showColumns, "Catalog '%s' does not exist", tableName.getCatalogName());
-            }
+            metadata.getRequiredCatalogHandle(session, tableName.getCatalogName());
             if (!metadata.schemaExists(session, new CatalogSchemaName(tableName.getCatalogName(), tableName.getSchemaName()))) {
                 throw semanticException(SCHEMA_NOT_FOUND, showColumns, "Schema '%s' does not exist", tableName.getSchemaName());
             }

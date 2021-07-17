@@ -75,6 +75,7 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 
+import static io.trino.spi.StandardErrorCode.CATALOG_NOT_FOUND;
 import static io.trino.spi.function.OperatorType.CAST;
 
 public interface Metadata
@@ -366,6 +367,15 @@ public interface Metadata
      * Returns a connector id for the specified catalog name.
      */
     Optional<CatalogName> getCatalogHandle(Session session, String catalogName);
+
+    /**
+     * Returns a connector id for the specified catalog name.
+     */
+    default CatalogName getRequiredCatalogHandle(Session session, String catalogName)
+    {
+        return getCatalogHandle(session, catalogName)
+                .orElseThrow(() -> new TrinoException(CATALOG_NOT_FOUND, "Catalog does not exist: " + catalogName));
+    }
 
     /**
      * Gets all the loaded catalogs
