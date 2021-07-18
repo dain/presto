@@ -31,7 +31,6 @@ import static com.google.common.util.concurrent.Futures.immediateVoidFuture;
 import static io.trino.metadata.MetadataUtil.checkRoleExists;
 import static io.trino.metadata.MetadataUtil.createCatalogSchemaName;
 import static io.trino.metadata.MetadataUtil.createPrincipal;
-import static io.trino.metadata.MetadataUtil.getSessionCatalog;
 import static io.trino.spi.StandardErrorCode.SCHEMA_NOT_FOUND;
 import static io.trino.sql.analyzer.SemanticExceptions.semanticException;
 
@@ -55,7 +54,6 @@ public class SetSchemaAuthorizationTask
             WarningCollector warningCollector)
     {
         Session session = stateMachine.getSession();
-        String catalog = getSessionCatalog(metadata, session, statement);
 
         CatalogSchemaName source = createCatalogSchemaName(session, statement, Optional.of(statement.getSource()));
 
@@ -63,7 +61,7 @@ public class SetSchemaAuthorizationTask
             throw semanticException(SCHEMA_NOT_FOUND, statement, "Schema '%s' does not exist", source);
         }
         TrinoPrincipal principal = createPrincipal(statement.getPrincipal());
-        checkRoleExists(session, statement, metadata, principal, Optional.of(catalog));
+        checkRoleExists(session, statement, metadata, principal, Optional.of(source.getCatalogName()));
 
         accessControl.checkCanSetSchemaAuthorization(session.toSecurityContext(), source, principal);
 
