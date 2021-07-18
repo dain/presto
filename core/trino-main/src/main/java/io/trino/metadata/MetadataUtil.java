@@ -217,6 +217,17 @@ public final class MetadataUtil
         }
     }
 
+    public static Optional<String> processRoleCommandCatalog(Metadata metadata, Session session, Node node, Optional<String> catalog, boolean legacyCatalogRoles)
+    {
+        // old role commands use only supported catalog roles and used session catalog as the default
+        if (catalog.isEmpty() && legacyCatalogRoles) {
+            return Optional.of(getSessionCatalog(metadata, session, node));
+        }
+
+        catalog.ifPresent(catalogName -> metadata.getRequiredCatalogHandle(session, catalogName));
+        return catalog;
+    }
+
     public static class TableMetadataBuilder
     {
         public static TableMetadataBuilder tableMetadataBuilder(SchemaTableName tableName)

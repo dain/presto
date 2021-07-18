@@ -20,15 +20,19 @@ import io.trino.metadata.Metadata;
 import io.trino.security.AccessControl;
 import io.trino.security.SecurityContext;
 import io.trino.spi.security.SelectedRole;
+import io.trino.sql.analyzer.FeaturesConfig;
 import io.trino.sql.tree.Expression;
 import io.trino.sql.tree.Identifier;
 import io.trino.sql.tree.SetRole;
 import io.trino.transaction.TransactionManager;
 
+import javax.inject.Inject;
+
 import java.util.List;
 import java.util.Optional;
 
 import static com.google.common.util.concurrent.Futures.immediateVoidFuture;
+import static io.trino.metadata.MetadataUtil.processRoleCommandCatalog;
 import static io.trino.spi.StandardErrorCode.ROLE_NOT_FOUND;
 import static io.trino.spi.security.AccessDeniedException.denySetRole;
 import static io.trino.sql.analyzer.SemanticExceptions.semanticException;
@@ -37,6 +41,14 @@ import static java.util.Locale.ENGLISH;
 public class SetRoleTask
         implements DataDefinitionTask<SetRole>
 {
+    private final boolean legacyCatalogRoles;
+
+    @Inject
+    public SetRoleTask(FeaturesConfig featuresConfig)
+    {
+        legacyCatalogRoles = featuresConfig.isLegacyCatalogRoles();
+    }
+
     @Override
     public String getName()
     {
@@ -56,7 +68,7 @@ public class SetRoleTask
         Session session = stateMachine.getSession();
         Optional<String> catalog = statement.getCatalog()
                 .map(Identifier::getValue);
-        catalog.ifPresent(catalogName -> metadata.getRequiredCatalogHandle(session, catalogName));
+        catalog = processRoleCommandCatalog(metadata, session, statement, catalog, legacyCatalogRoles);
 
         if (statement.getType() == SetRole.Type.ROLE) {
             String role = statement.getRole().map(c -> c.getValue().toLowerCase(ENGLISH)).orElseThrow();

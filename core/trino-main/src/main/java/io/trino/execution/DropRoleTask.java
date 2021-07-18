@@ -18,21 +18,33 @@ import io.trino.Session;
 import io.trino.execution.warnings.WarningCollector;
 import io.trino.metadata.Metadata;
 import io.trino.security.AccessControl;
+import io.trino.sql.analyzer.FeaturesConfig;
 import io.trino.sql.tree.DropRole;
 import io.trino.sql.tree.Expression;
 import io.trino.sql.tree.Identifier;
 import io.trino.transaction.TransactionManager;
+
+import javax.inject.Inject;
 
 import java.util.List;
 import java.util.Optional;
 
 import static com.google.common.util.concurrent.Futures.immediateVoidFuture;
 import static io.trino.metadata.MetadataUtil.checkRoleExists;
+import static io.trino.metadata.MetadataUtil.processRoleCommandCatalog;
 import static java.util.Locale.ENGLISH;
 
 public class DropRoleTask
         implements DataDefinitionTask<DropRole>
 {
+    private final boolean legacyCatalogRoles;
+
+    @Inject
+    public DropRoleTask(FeaturesConfig featuresConfig)
+    {
+        legacyCatalogRoles = featuresConfig.isLegacyCatalogRoles();
+    }
+
     @Override
     public String getName()
     {
@@ -52,7 +64,7 @@ public class DropRoleTask
         Session session = stateMachine.getSession();
         Optional<String> catalog = statement.getCatalog()
                 .map(Identifier::getValue);
-        catalog.ifPresent(catalogName -> metadata.getRequiredCatalogHandle(session, catalogName));
+        catalog = processRoleCommandCatalog(metadata, session, statement, catalog, legacyCatalogRoles);
         String role = statement.getName().getValue().toLowerCase(ENGLISH);
         accessControl.checkCanDropRole(session.toSecurityContext(), role, catalog);
         checkRoleExists(session, statement, metadata, role, catalog);

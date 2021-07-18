@@ -159,7 +159,7 @@ public class TestSetRoleTask
                 metadata,
                 WarningCollector.NOOP,
                 Optional.empty());
-        new SetRoleTask().execute(setRole, transactionManager, metadata, accessControl, stateMachine, ImmutableList.of(), WarningCollector.NOOP);
+        new SetRoleTask(new FeaturesConfig()).execute(setRole, transactionManager, metadata, accessControl, stateMachine, ImmutableList.of(), WarningCollector.NOOP);
         return stateMachine;
     }
 }

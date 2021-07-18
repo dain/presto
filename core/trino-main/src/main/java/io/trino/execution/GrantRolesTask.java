@@ -20,10 +20,13 @@ import io.trino.metadata.Metadata;
 import io.trino.metadata.MetadataUtil;
 import io.trino.security.AccessControl;
 import io.trino.spi.security.TrinoPrincipal;
+import io.trino.sql.analyzer.FeaturesConfig;
 import io.trino.sql.tree.Expression;
 import io.trino.sql.tree.GrantRoles;
 import io.trino.sql.tree.Identifier;
 import io.trino.transaction.TransactionManager;
+
+import javax.inject.Inject;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -35,11 +38,20 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.google.common.util.concurrent.Futures.immediateVoidFuture;
 import static io.trino.metadata.MetadataUtil.checkRoleExists;
 import static io.trino.metadata.MetadataUtil.createPrincipal;
+import static io.trino.metadata.MetadataUtil.processRoleCommandCatalog;
 import static io.trino.spi.security.PrincipalType.ROLE;
 
 public class GrantRolesTask
         implements DataDefinitionTask<GrantRoles>
 {
+    private final boolean legacyCatalogRoles;
+
+    @Inject
+    public GrantRolesTask(FeaturesConfig featuresConfig)
+    {
+        legacyCatalogRoles = featuresConfig.isLegacyCatalogRoles();
+    }
+
     @Override
     public String getName()
     {
@@ -66,7 +78,7 @@ public class GrantRolesTask
         Optional<TrinoPrincipal> grantor = statement.getGrantor().map(specification -> createPrincipal(session, specification));
         Optional<String> catalog = statement.getCatalog()
                 .map(Identifier::getValue);
-        catalog.ifPresent(catalogName -> metadata.getRequiredCatalogHandle(session, catalogName));
+        catalog = processRoleCommandCatalog(metadata, session, statement, catalog, legacyCatalogRoles);
 
         Set<String> specifiedRoles = new LinkedHashSet<>();
         specifiedRoles.addAll(roles);
